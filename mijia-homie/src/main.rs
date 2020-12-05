@@ -3,7 +3,8 @@
 mod config;
 
 use crate::config::{get_mqtt_options, read_sensor_names, Config};
-use backoff::{future::FutureOperation, ExponentialBackoff};
+use backoff::future::retry;
+use backoff::ExponentialBackoff;
 use eyre::{eyre, Report};
 use futures::stream::StreamExt;
 use futures::TryFutureExt;
@@ -388,10 +389,9 @@ async fn connect_and_subscribe_sensor_or_disconnect(
     let mut backoff = ExponentialBackoff::default();
     backoff.max_elapsed_time = Some(SENSOR_CONNECT_RETRY_TIMEOUT);
 
-    FutureOperation::retry(
-        || session.start_notify_sensor(&id).map_err(Into::into),
-        backoff,
-    )
+    retry(backoff, || {
+        session.start_notify_sensor(&id).map_err(Into::into)
+    })
     .or_else(|e| async {
         session
             .bt_session
