@@ -427,7 +427,7 @@ pub struct DescriptorInfo {
 /// from different places. It is the main entry point to the library.
 #[derive(Clone)]
 pub struct BluetoothSession {
-    pub connection: Arc<SyncConnection>,
+    connection: Arc<SyncConnection>,
 }
 
 impl Debug for BluetoothSession {
